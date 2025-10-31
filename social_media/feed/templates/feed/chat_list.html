@@ -1,0 +1,80 @@
+{% extends 'feed/base.html' %}
+
+{% block content %}
+<div class="container-fluid pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="premium-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0" style="color: #ff6b6b;">Messages</h4>
+                    <a href="{% url 'feed:search_users' %}" class="btn btn-premium btn-sm" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);">
+                        <i class="fas fa-plus me-1"></i>New Chat
+                    </a>
+                </div>
+
+                {% for chat in chats %}
+                    {% for participant in chat.participants.all %}
+                        {% if participant.id != request.user.id %}
+                            {% with unread_count=chat.messages.filter.is_read=False.exclude.sender=request.user.count %}
+                            <a href="{% url 'feed:chat_detail' chat.id %}" class="text-decoration-none">
+                                <div class="chat-item d-flex align-items-center p-3 rounded mb-2" 
+                                     style="background: rgba(255,107,107,0.1); transition: all 0.3s ease; border-left: 4px solid #ff6b6b;">
+                                    {% if participant.profile.profile_pic %}
+                                        <img src="{{ participant.profile.profile_pic.url }}" class="profile-pic-sm me-3">
+                                    {% else %}
+                                        <div class="profile-pic-sm me-3" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 text-light {% if unread_count > 0 %}fw-bold{% endif %}">
+                                            {{ participant.username }}
+                                            {% if unread_count > 0 %}
+                                                <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="{% if unread_count > 0 %}text-warning{% else %}text-muted{% endif %}">
+                                            {% with last_message=chat.messages.last %}
+                                                {% if last_message %}
+                                                    {{ last_message.text|truncatewords:5 }}
+                                                {% else %}
+                                                    Start a conversation...
+                                                {% endif %}
+                                            {% endwith %}
+                                        </small>
+                                    </div>
+                                    <small class="text-muted">{{ chat.updated_at|timesince }} ago</small>
+                                </div>
+                            </a>
+                            {% endwith %}
+                        {% endif %}
+                    {% endfor %}
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No messages yet</h5>
+                    <p class="text-muted">Start a conversation with someone!</p>
+                    <a href="{% url 'feed:search_users' %}" class="btn btn-premium" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);">
+                        <i class="fas fa-search me-2"></i>Find Users
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-pic-sm {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-item:hover {
+    background: rgba(255,107,107,0.2) !important;
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}
