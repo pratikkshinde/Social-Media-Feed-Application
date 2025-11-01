@@ -1,0 +1,56 @@
+{% extends 'feed/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="premium-card p-4">
+            <div class="text-center mb-4">
+                <i class="fas fa-share fa-2x gradient-text"></i>
+                <h3 class="mt-2 fw-bold">Share Post</h3>
+                <p class="text-muted">Send this post to someone</p>
+            </div>
+
+            <!-- Post Preview -->
+            <div class="premium-card p-3 mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    {% if post.author.profile.profile_pic %}
+                        <img src="{{ post.author.profile.profile_pic.url }}" class="profile-pic-sm me-2">
+                    {% else %}
+                        <div class="profile-pic-sm me-2 bg-gradient d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user text-white small"></i>
+                        </div>
+                    {% endif %}
+                    <strong>{{ post.author.username }}</strong>
+                </div>
+                <img src="{{ post.image.url }}" class="img-fluid rounded mb-2">
+                {% if post.caption %}
+                <p class="mb-0">{{ post.caption }}</p>
+                {% endif %}
+            </div>
+
+            <!-- User List -->
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Select User to Share With</label>
+                    <select name="user_id" class="form-select" required>
+                        <option value="">Choose a user...</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-premium">
+                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                    </button>
+                    <a href="{% url 'feed:post_detail' post.id %}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Post
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

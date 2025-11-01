@@ -1,0 +1,122 @@
+{% extends 'feed/base.html' %}
+
+{% block content %}
+<div class="container-fluid pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="premium-card p-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-search fa-2x gradient-text"></i>
+                    <h2 class="mt-2 fw-bold">Discover People</h2>
+                    <p class="text-muted">Find and connect with other users</p>
+                </div>
+
+                <!-- Search Form -->
+                <form method="GET" class="mb-4">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search users..." 
+                               value="{{ query }}">
+                        <button class="btn btn-premium" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Users List -->
+                {% if users %}
+                <div class="users-list">
+                    {% for user in users %}
+                    <div class="user-card premium-card p-3 mb-3">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <!-- User Info -->
+                            <div class="d-flex align-items-center">
+                                {% if user.profile.profile_pic %}
+                                    <img src="{{ user.profile.profile_pic.url }}" class="profile-pic-md me-3">
+                                {% else %}
+                                    <div class="profile-pic-md me-3 bg-gradient d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ user.username }}</h6>
+                                    {% if user.profile.bio %}
+                                        <p class="text-muted small mb-0">{{ user.profile.bio|truncatewords:8 }}</p>
+                                    {% else %}
+                                        <p class="text-muted small mb-0">No bio yet</p>
+                                    {% endif %}
+                                    <small class="text-muted">{{ user.posts.count }} posts • {{ user.profile.followers.count }} followers</small>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2">
+                                {% if user != request.user %}
+                                    <!-- Follow/Unfollow Button -->
+                                    {% if user in request.user.profile.followers.all %}
+                                        <a href="{% url 'feed:unfollow_user' user.username %}" class="btn btn-outline-light btn-sm">
+                                            Following
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'feed:follow_user' user.username %}" class="btn btn-premium btn-sm">
+                                            Follow
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <!-- Message Button -->
+                                    <a href="{% url 'feed:start_chat' user.username %}" class="btn btn-outline-light btn-sm">
+                                        <i class="fas fa-comment"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- View Profile Button -->
+                        <div class="text-center mt-3">
+                            <a href="{% url 'feed:user_profile' user.username %}" class="btn btn-outline-light btn-sm w-100">
+                                View Full Profile
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif query %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">No users found for "{{ query }}"</p>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">Search for users to connect with</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-pic-md {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #667eea;
+}
+
+.user-card {
+    transition: all 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+</style>
+{% endblock %}
