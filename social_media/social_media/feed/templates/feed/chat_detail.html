@@ -1,0 +1,167 @@
+{% extends 'feed/base.html' %}
+
+{% block content %}
+<div class="container-fluid pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="premium-card p-0" style="background: rgba(255,107,107,0.05); border: 1px solid #ff6b6b;">
+                <!-- Chat Header -->
+                <div class="chat-header p-3 border-bottom border-secondary" style="background: rgba(255,107,107,0.1);">
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'feed:chat_list' %}" class="btn btn-outline-light btn-sm me-3" style="border-color: #ff6b6b; color: #ff6b6b;">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        {% if other_user.profile.profile_pic %}
+                            <img src="{{ other_user.profile.profile_pic.url }}" class="profile-pic-sm me-2">
+                        {% else %}
+                            <div class="profile-pic-sm me-2" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user text-white small"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0 fw-bold" style="color: #ff6b6b;">{{ other_user.username }}</h6>
+                            <small class="text-muted">
+                                {% if other_user.profile.bio %}
+                                    {{ other_user.profile.bio }}
+                                {% else %}
+                                    Active recently
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="messages-container p-3" style="height: 60vh; overflow-y: auto; background: rgba(255,107,107,0.02);" id="messagesContainer">
+                    {% for message in messages %}
+                    <div class="message mb-3 {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+                        <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                            <div class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %} {% if not message.is_read and message.sender != request.user %}unread{% endif %}">
+                                {% if message.image %}
+                                <div class="message-image mb-2">
+                                    <img src="{{ message.image.url }}" class="img-fluid rounded" style="max-width: 300px;">
+                                </div>
+                                {% endif %}
+                                
+                                {% if message.text %}
+                                <div class="message-text">
+                                    {{ message.text }}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="message-time text-end">
+                                    <small class="text-muted">{{ message.created_at|time:"g:i A" }}</small>
+                                    {% if message.sender == request.user and message.is_read %}
+                                    <small class="text-success ms-1"><i class="fas fa-check-double"></i></small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No messages yet</h5>
+                        <p class="text-muted">Start the conversation!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Message Input -->
+                <div class="message-input p-3 border-top border-secondary" style="background: rgba(255,107,107,0.1);">
+                    <form method="POST" enctype="multipart/form-data" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <div class="flex-grow-1">
+                            <input type="text" name="text" class="form-control" placeholder="Type a message..." required style="border-color: #ff6b6b;">
+                        </div>
+                        <div class="btn-group">
+                            <label for="imageUpload" class="btn btn-outline-light" style="border-color: #ff6b6b; color: #ff6b6b;">
+                                <i class="fas fa-image"></i>
+                            </label>
+                            <input type="file" name="image" id="imageUpload" class="d-none" accept="image/*">
+                            <button type="submit" class="btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%); border: none;">
+                                <i class="fas fa-paper-plane text-white"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-pic-sm {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.message-bubble.sent {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message-bubble.received {
+    background: rgba(255,107,107,0.1);
+    color: var(--text-light);
+    border-bottom-left-radius: 5px;
+    border: 1px solid rgba(255,107,107,0.3);
+}
+
+.message-bubble.unread {
+    border: 2px solid #ff6b6b;
+    background: rgba(255,107,107,0.2);
+}
+
+.message-time {
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.message-image img {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* Scrollbar styling */
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: rgba(255,107,107,0.1);
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #ff8e8e;
+}
+</style>
+
+<script>
+// Auto-scroll to bottom of messages
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+});
+
+// Auto-focus on message input
+document.querySelector('input[name="text"]').focus();
+</script>
+{% endblock %}
