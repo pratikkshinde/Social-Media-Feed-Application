@@ -13,38 +13,6 @@ A modern, premium social media application built with Django that allows users t
 -  **Premium Styling** - Animated borders and modern design
 
 
-## 💻Frontend
-
--  **React** - Main frontend framework
--  **TypeScript** - Programming language
--  **Material-UI (MUI)** - UI component library
--  **React Router** - Client-side routing
--  **Axios** - HTTP client for API calls
--  **React Query** - Data fetching and state management
--  **React Hook Form** - Form handling
--  **Yup** - Form validation schema
-
-
-## ⚙️Backend
-
--  **Node.js** - Runtime environment
--  **Express.js** - Web framework
--  **TypeScript** - Programming language
-
-
-## 🗄️Database & ORM
-
--  **PostgreSQL** - Primary database
--  **Prisma** - ORM for database operations
-
-
-## 🔐Authentication & Security
-
--  **JWT (JSON Web Tokens)** - Authentication
--  **bcrypt** - Password hashing
-- **CORS** - Cross-origin resource sharing
-
-
 ## 🛠️Development & Tools
 
 -  **VS Code** - Development environment
