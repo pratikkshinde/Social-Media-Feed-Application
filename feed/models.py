@@ -12,10 +12,10 @@ class Profile(models.Model):
         return self.user.username
     
     def total_followers(self):
-        return self.followers.count()
+        return Follow.objects.filter(following=self.user).count()
     
     def total_following(self):
-        return self.user.following.count()
+        return Follow.objects.filter(follower=self.user).count()
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')

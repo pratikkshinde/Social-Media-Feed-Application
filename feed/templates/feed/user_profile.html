@@ -3,71 +3,53 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
+        <div class="col-lg-10 col-xl-9">
             <!-- Profile Header -->
-            <div class="premium-card p-4 mb-4">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        {% if profile_user.profile.profile_pic %}
-                            <img src="{{ profile_user.profile.profile_pic.url }}" class="profile-pic-large" alt="Profile">
-                        {% else %}
-                            <div class="profile-pic-large d-flex align-items-center justify-content-center bg-gradient">
-                                <i class="fas fa-user fa-2x text-white"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="col">
-                        <div class="d-flex align-items-center mb-2">
-                            <h2 class="fw-bold me-3">{{ profile_user.username }}</h2>
-                            <div class="d-flex gap-2">
-                                {% if profile_user != request.user %}
-                                    <!-- Follow/Unfollow Button -->
-                                    {% if is_following %}
-                                        <a href="{% url 'feed:unfollow_user' profile_user.username %}" class="btn btn-outline-light btn-sm">
-                                            Following
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'feed:follow_user' profile_user.username %}" class="btn btn-premium btn-sm">
-                                            Follow
-                                        </a>
-                                    {% endif %}
-                                    
-                                    <!-- Message Button -->
-                                    <a href="{% url 'feed:start_chat' profile_user.username %}" class="btn btn-outline-light btn-sm">
-                                        <i class="fas fa-comment me-1"></i>Message
-                                    </a>
-                                {% endif %}
-                            </div>
+            <section class="premium-card profile-hero mb-4" aria-labelledby="profileName">
+                <div class="profile-avatar-ring">
+                    {% if profile_user.profile.profile_pic %}
+                        <img src="{{ profile_user.profile.profile_pic.url }}" class="profile-avatar" alt="{{ profile_user.username }} profile picture">
+                    {% else %}
+                        <div class="profile-avatar avatar-fallback">
+                            <i class="fas fa-bolt avatar-mark" aria-hidden="true"></i>
                         </div>
-                        
-                        <!-- Stats -->
-                        <div class="d-flex mb-3">
-                            <div class="me-4">
-                                <strong>{{ total_posts }}</strong>
-                                <span class="text-muted">Posts</span>
-                            </div>
-                            <div class="me-4">
-                                <strong>{{ total_followers }}</strong>
-                                <span class="text-muted">Followers</span>
-                            </div>
-                            <div>
-                                <strong>{{ total_following }}</strong>
-                                <span class="text-muted">Following</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Bio -->
-                        {% if profile_user.profile.bio %}
-                            <p class="mb-0">{{ profile_user.profile.bio }}</p>
-                        {% else %}
-                            <p class="text-muted mb-0">No bio yet</p>
-                        {% endif %}
-                    </div>
+                    {% endif %}
                 </div>
-            </div>
+                <div class="profile-information">
+                    <div class="profile-heading">
+                        <h1 class="profile-name" id="profileName">{{ profile_user.username }}</h1>
+                    </div>
+                    <dl class="profile-stats" aria-label="Profile statistics">
+                        <div class="profile-stat"><dd>{{ total_posts }}</dd><dt>Posts</dt></div>
+                        <div class="profile-stat"><dd>{{ total_followers }}</dd><dt>Followers</dt></div>
+                        <div class="profile-stat"><dd>{{ total_following }}</dd><dt>Following</dt></div>
+                    </dl>
+                    {% if profile_user.profile.bio %}
+                        <p class="profile-bio">{{ profile_user.profile.bio }}</p>
+                    {% else %}
+                        <p class="profile-bio empty">No bio yet</p>
+                    {% endif %}
+                    {% if profile_user != request.user %}
+                    <div class="profile-actions visitor-profile-actions">
+                        {% if is_following %}
+                            <a href="{% url 'feed:unfollow_user' profile_user.username %}" class="btn profile-wide-action" aria-label="Unfollow {{ profile_user.username }}">
+                                <i class="fas fa-user-check me-2" aria-hidden="true"></i>Following
+                            </a>
+                        {% else %}
+                            <a href="{% url 'feed:follow_user' profile_user.username %}" class="btn profile-wide-action" aria-label="Follow {{ profile_user.username }}">
+                                <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Follow
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'feed:start_chat' profile_user.username %}" class="btn profile-wide-action">
+                            <i class="fas fa-comment me-2" aria-hidden="true"></i>Message
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
 
             <!-- Gallery Navigation -->
-            <div class="premium-card p-3 mb-4">
+            <div class="premium-card profile-tabs mb-4">
                 <div class="row text-center">
                     <div class="col">
                         <a href="#" class="text-decoration-none text-light fw-semibold">
@@ -78,9 +60,9 @@
             </div>
 
             <!-- Posts Grid -->
-<div class="row">
+<div class="row g-2 profile-gallery">
     {% for post in posts %}
-    <div class="col-md-4 mb-4">
+                <div class="col-4 mb-2">
         <div class="post-card premium-card">
             <!-- Make post clickable -->
             <a href="{% url 'feed:post_detail' post.id %}" class="text-decoration-none">
@@ -104,14 +86,6 @@
 </div>
 
 <style>
-.profile-pic-large {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #667eea;
-}
-
 .post-card {
     position: relative;
     border-radius: 12px;
@@ -122,12 +96,6 @@
 
 .post-card:hover {
     transform: translateY(-5px);
-}
-
-.post-image {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
 }
 
 .post-overlay {

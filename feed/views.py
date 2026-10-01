@@ -3,7 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Count, Q
 from .forms import RegisterForm, ProfileForm, PostForm
 from .models import Profile, Post, Follow, Comment, Chat, Message, Notification
 
@@ -127,8 +127,15 @@ def search_users(request):
         Q(first_name__icontains=query) |
         Q(last_name__icontains=query)
     ).exclude(id=request.user.id)[:20]
+    following_ids = set(Follow.objects.filter(
+        follower=request.user
+    ).values_list('following_id', flat=True))
     
-    return render(request, 'feed/search.html', {'users': users, 'query': query})
+    return render(request, 'feed/search.html', {
+        'users': users,
+        'query': query,
+        'following_ids': following_ids,
+    })
 
 @login_required
 def follow_user(request, username):
@@ -202,13 +209,12 @@ def add_comment(request, post_id):
 
 @login_required
 def chat_list(request):
-    chats = Chat.objects.filter(participants=request.user).order_by('-updated_at')
-    
-    # TEMPORARILY COMMENT OUT THESE LINES:
-    # Mark messages as read when viewing chat list
-    # for chat in chats:
-    #     unread_messages = chat.messages.filter(is_read=False).exclude(sender=request.user)
-    #     unread_messages.update(is_read=True)
+    chats = Chat.objects.filter(participants=request.user).annotate(
+        unread_count=Count(
+            'messages',
+            filter=Q(messages__is_read=False) & ~Q(messages__sender=request.user),
+        )
+    ).order_by('-updated_at')
     
     return render(request, 'feed/chat_list.html', {'chats': chats})
 
@@ -217,18 +223,15 @@ def chat_detail(request, chat_id):
     chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
     other_user = chat.participants.exclude(id=request.user.id).first()
     
-    # TEMPORARILY COMMENT OUT THESE LINES:
-    # Mark messages as read when opening chat
-    # unread_messages = chat.messages.filter(is_read=False).exclude(sender=request.user)
-    # unread_messages.update(is_read=True)
-    
     if request.method == 'POST':
-        text = request.POST.get('text')
+        text = request.POST.get('text', '').strip()
         image = request.FILES.get('image')
         if text or image:
             Message.objects.create(chat=chat, sender=request.user, text=text, image=image)
-            chat.save()  # Update updated_at
+            chat.save(update_fields=['updated_at'])
             return redirect('feed:chat_detail', chat_id=chat.id)
+    else:
+        chat.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
     
     messages = chat.messages.all()
     return render(request, 'feed/chat_detail.html', {

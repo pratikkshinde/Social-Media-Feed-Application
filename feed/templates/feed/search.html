@@ -33,8 +33,8 @@
                                 {% if user.profile.profile_pic %}
                                     <img src="{{ user.profile.profile_pic.url }}" class="profile-pic-md me-3">
                                 {% else %}
-                                    <div class="profile-pic-md me-3 bg-gradient d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-user text-white"></i>
+                                    <div class="profile-pic-md me-3 avatar-fallback">
+                                        <i class="fas fa-bolt avatar-mark" aria-hidden="true"></i>
                                     </div>
                                 {% endif %}
                                 <div>
@@ -44,7 +44,7 @@
                                     {% else %}
                                         <p class="text-muted small mb-0">No bio yet</p>
                                     {% endif %}
-                                    <small class="text-muted">{{ user.posts.count }} posts • {{ user.profile.followers.count }} followers</small>
+                                    <small class="text-muted">{{ user.posts.count }} posts • {{ user.followers.count }} followers</small>
                                 </div>
                             </div>
 
@@ -52,7 +52,7 @@
                             <div class="d-flex gap-2">
                                 {% if user != request.user %}
                                     <!-- Follow/Unfollow Button -->
-                                    {% if user in request.user.profile.followers.all %}
+                                    {% if user.id in following_ids %}
                                         <a href="{% url 'feed:unfollow_user' user.username %}" class="btn btn-outline-light btn-sm">
                                             Following
                                         </a>

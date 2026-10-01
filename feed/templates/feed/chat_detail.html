@@ -1,167 +1,458 @@
 {% extends 'feed/base.html' %}
 
 {% block content %}
-<div class="container-fluid pb-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <div class="premium-card p-0" style="background: rgba(255,107,107,0.05); border: 1px solid #ff6b6b;">
-                <!-- Chat Header -->
-                <div class="chat-header p-3 border-bottom border-secondary" style="background: rgba(255,107,107,0.1);">
-                    <div class="d-flex align-items-center">
-                        <a href="{% url 'feed:chat_list' %}" class="btn btn-outline-light btn-sm me-3" style="border-color: #ff6b6b; color: #ff6b6b;">
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                        {% if other_user.profile.profile_pic %}
-                            <img src="{{ other_user.profile.profile_pic.url }}" class="profile-pic-sm me-2">
-                        {% else %}
-                            <div class="profile-pic-sm me-2" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-user text-white small"></i>
-                            </div>
+<div class="chat-page">
+    <section class="premium-card chat-thread-card" aria-label="Conversation with {{ other_user.username }}">
+        <header class="chat-header">
+            <a href="{% url 'feed:chat_list' %}" class="chat-back-button" aria-label="Back to messages" title="Back to messages">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            </a>
+            {% if other_user.profile.profile_pic %}
+                <img src="{{ other_user.profile.profile_pic.url }}" class="chat-avatar" alt="">
+            {% else %}
+                <span class="chat-avatar avatar-fallback"><i class="fas fa-bolt" aria-hidden="true"></i></span>
+            {% endif %}
+            <div class="chat-contact">
+                <h1>{{ other_user.username }}</h1>
+                <p>{% if other_user.profile.bio %}{{ other_user.profile.bio }}{% else %}Your conversation{% endif %}</p>
+            </div>
+            <a href="{% url 'feed:user_profile' other_user.username %}" class="chat-profile-link" aria-label="View {{ other_user.username }}'s profile" title="View profile">
+                <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            </a>
+        </header>
+
+        <div class="messages-container" id="messagesContainer" aria-live="polite" aria-relevant="additions">
+            {% for message in messages %}
+            <div class="message-row {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+                <div class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                    {% if message.image %}
+                    <div class="message-image">
+                        <img src="{{ message.image.url }}" alt="Photo shared by {{ message.sender.username }}">
+                    </div>
+                    {% endif %}
+                    {% if message.text %}
+                    <p class="message-text">{{ message.text|linebreaksbr }}</p>
+                    {% endif %}
+                    <div class="message-meta">
+                        <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|time:"g:i A" }}</time>
+                        {% if message.sender == request.user and message.is_read %}
+                            <i class="fas fa-check-double" aria-label="Read"></i>
                         {% endif %}
-                        <div>
-                            <h6 class="mb-0 fw-bold" style="color: #ff6b6b;">{{ other_user.username }}</h6>
-                            <small class="text-muted">
-                                {% if other_user.profile.bio %}
-                                    {{ other_user.profile.bio }}
-                                {% else %}
-                                    Active recently
-                                {% endif %}
-                            </small>
-                        </div>
                     </div>
-                </div>
-
-                <!-- Messages Container -->
-                <div class="messages-container p-3" style="height: 60vh; overflow-y: auto; background: rgba(255,107,107,0.02);" id="messagesContainer">
-                    {% for message in messages %}
-                    <div class="message mb-3 {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}">
-                        <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
-                            <div class="message-bubble {% if message.sender == request.user %}sent{% else %}received{% endif %} {% if not message.is_read and message.sender != request.user %}unread{% endif %}">
-                                {% if message.image %}
-                                <div class="message-image mb-2">
-                                    <img src="{{ message.image.url }}" class="img-fluid rounded" style="max-width: 300px;">
-                                </div>
-                                {% endif %}
-                                
-                                {% if message.text %}
-                                <div class="message-text">
-                                    {{ message.text }}
-                                </div>
-                                {% endif %}
-                                
-                                <div class="message-time text-end">
-                                    <small class="text-muted">{{ message.created_at|time:"g:i A" }}</small>
-                                    {% if message.sender == request.user and message.is_read %}
-                                    <small class="text-success ms-1"><i class="fas fa-check-double"></i></small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No messages yet</h5>
-                        <p class="text-muted">Start the conversation!</p>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Message Input -->
-                <div class="message-input p-3 border-top border-secondary" style="background: rgba(255,107,107,0.1);">
-                    <form method="POST" enctype="multipart/form-data" class="d-flex gap-2">
-                        {% csrf_token %}
-                        <div class="flex-grow-1">
-                            <input type="text" name="text" class="form-control" placeholder="Type a message..." required style="border-color: #ff6b6b;">
-                        </div>
-                        <div class="btn-group">
-                            <label for="imageUpload" class="btn btn-outline-light" style="border-color: #ff6b6b; color: #ff6b6b;">
-                                <i class="fas fa-image"></i>
-                            </label>
-                            <input type="file" name="image" id="imageUpload" class="d-none" accept="image/*">
-                            <button type="submit" class="btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%); border: none;">
-                                <i class="fas fa-paper-plane text-white"></i>
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
+            {% empty %}
+            <div class="chat-empty-state">
+                <span class="chat-empty-icon"><i class="fas fa-comments" aria-hidden="true"></i></span>
+                <h2>Start the conversation</h2>
+                <p>Send a message or share a photo with {{ other_user.username }}.</p>
+            </div>
+            {% endfor %}
         </div>
-    </div>
+
+        <footer class="message-composer">
+            <div class="attachment-chip" id="attachmentChip" hidden>
+                <i class="fas fa-image" aria-hidden="true"></i>
+                <span id="attachmentName"></span>
+                <button type="button" id="removeAttachment" aria-label="Remove attachment"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="message-form">
+                {% csrf_token %}
+                <label for="imageUpload" class="attach-image-button" aria-label="Attach photo" title="Attach photo">
+                    <i class="fas fa-paperclip" aria-hidden="true"></i>
+                </label>
+                <input type="file" name="image" id="imageUpload" class="visually-hidden" accept="image/*">
+                <input type="text" name="text" class="message-text-input" placeholder="Write a message..." aria-label="Write a message" autocomplete="off">
+                <button type="submit" class="send-message-button" aria-label="Send message" title="Send message">
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                </button>
+            </form>
+        </footer>
+    </section>
 </div>
 
 <style>
-.profile-pic-sm {
-    width: 45px;
-    height: 45px;
+.chat-page {
+    width: min(100%, 920px);
+    margin: 0 auto;
+}
+
+.chat-thread-card {
+    height: min(72vh, 760px);
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-header {
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-soft);
+}
+
+.chat-back-button,
+.chat-profile-link {
+    width: 40px;
+    height: 40px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.chat-back-button:hover,
+.chat-profile-link:hover {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.chat-avatar {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--border-color);
     border-radius: 50%;
     object-fit: cover;
+    color: #fff;
+}
+
+.chat-contact {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-contact h1 {
+    margin: 0 0 3px;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-contact p {
+    margin: 0;
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.messages-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px clamp(16px, 4vw, 36px);
+    background: linear-gradient(180deg, rgba(82, 120, 245, 0.025), transparent 35%);
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 14px;
+}
+
+.message-row.message-sent {
+    justify-content: flex-end;
+}
+
+.message-row.message-received {
+    justify-content: flex-start;
 }
 
 .message-bubble {
-    max-width: 70%;
-    padding: 12px 16px;
+    max-width: min(76%, 520px);
+    min-width: 76px;
+    padding: 11px 14px 8px;
     border-radius: 18px;
-    margin-bottom: 5px;
-    position: relative;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .message-bubble.sent {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
-    color: white;
     border-bottom-right-radius: 5px;
+    background: var(--primary-gradient);
+    color: #fff;
 }
 
 .message-bubble.received {
-    background: rgba(255,107,107,0.1);
-    color: var(--text-light);
+    border: 1px solid var(--border-color);
     border-bottom-left-radius: 5px;
-    border: 1px solid rgba(255,107,107,0.3);
+    background: var(--surface-soft);
+    color: var(--text-primary);
 }
 
-.message-bubble.unread {
-    border: 2px solid #ff6b6b;
-    background: rgba(255,107,107,0.2);
+.message-text {
+    margin: 0;
+    white-space: normal;
 }
 
-.message-time {
-    font-size: 0.75rem;
+.message-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
     margin-top: 5px;
+    font-size: 0.68rem;
+    opacity: 0.78;
+}
+
+.message-image {
+    margin: -2px -4px 8px;
 }
 
 .message-image img {
+    display: block;
+    width: auto;
+    max-width: min(100%, 360px);
+    max-height: 360px;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.chat-empty-state {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.chat-empty-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--surface-soft);
+    color: #7d91ff;
+    font-size: 1.35rem;
+}
+
+.chat-empty-state h2 {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.chat-empty-state p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.message-composer {
+    padding: 14px 18px;
+    border-top: 1px solid var(--border-color);
+    background: var(--surface-soft);
+}
+
+.message-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.attach-image-button,
+.send-message-button {
+    width: 44px;
+    height: 44px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.attach-image-button {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+}
+
+.attach-image-button:hover {
+    background: var(--surface-soft);
+    color: var(--text-primary);
+}
+
+.send-message-button {
+    border: 0;
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(82, 120, 245, 0.25);
+}
+
+.send-message-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(82, 120, 245, 0.32);
+}
+
+.message-text-input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    outline: 0;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.message-text-input::placeholder {
+    color: var(--text-muted);
+}
+
+.message-text-input:focus {
+    border-color: #5278f5;
+    box-shadow: 0 0 0 3px rgba(82, 120, 245, 0.14);
+}
+
+.attachment-chip {
+    width: fit-content;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 10px 54px;
+    padding: 6px 8px 6px 10px;
+    border: 1px solid var(--border-color);
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
 }
 
-/* Scrollbar styling */
-.messages-container::-webkit-scrollbar {
-    width: 6px;
+.attachment-chip[hidden] {
+    display: none;
 }
 
-.messages-container::-webkit-scrollbar-track {
-    background: rgba(255,107,107,0.1);
-    border-radius: 3px;
+.attachment-chip span {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.messages-container::-webkit-scrollbar-thumb {
-    background: #ff6b6b;
-    border-radius: 3px;
+.attachment-chip button {
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
 }
 
-.messages-container::-webkit-scrollbar-thumb:hover {
-    background: #ff8e8e;
+@media (max-width: 575.98px) {
+    .chat-thread-card {
+        height: min(68vh, 640px);
+        min-height: 380px;
+    }
+
+    .chat-header {
+        min-height: 68px;
+        gap: 9px;
+        padding: 10px 12px;
+    }
+
+    .chat-back-button,
+    .chat-profile-link {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+    }
+
+    .chat-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .messages-container {
+        padding: 18px 12px;
+    }
+
+    .message-bubble {
+        max-width: 86%;
+        padding: 10px 12px 7px;
+    }
+
+    .message-image img {
+        max-height: 240px;
+    }
+
+    .message-composer {
+        padding: 10px;
+    }
+
+    .message-form {
+        gap: 7px;
+    }
+
+    .attach-image-button,
+    .send-message-button {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    .message-text-input {
+        height: 44px;
+        padding: 0 12px;
+    }
+
+    .attachment-chip {
+        margin-left: 49px;
+    }
 }
 </style>
 
 <script>
-// Auto-scroll to bottom of messages
 document.addEventListener('DOMContentLoaded', function() {
     const messagesContainer = document.getElementById('messagesContainer');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-});
+    const imageInput = document.getElementById('imageUpload');
+    const attachmentChip = document.getElementById('attachmentChip');
+    const attachmentName = document.getElementById('attachmentName');
+    const removeAttachment = document.getElementById('removeAttachment');
 
-// Auto-focus on message input
-document.querySelector('input[name="text"]').focus();
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    if (imageInput && attachmentChip) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            attachmentName.textContent = file.name;
+            attachmentChip.hidden = false;
+        });
+
+        removeAttachment.addEventListener('click', function() {
+            imageInput.value = '';
+            attachmentChip.hidden = true;
+        });
+    }
+
+    const input = document.querySelector('.message-text-input');
+    if (input && window.matchMedia('(min-width: 768px)').matches) {
+        input.focus();
+    }
+});
 </script>
 {% endblock %}

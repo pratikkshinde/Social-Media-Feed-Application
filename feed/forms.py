@@ -20,5 +20,14 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['image', 'caption']
         widgets = {
-            'caption': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Write a caption...'}),
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'visually-hidden upload-input',
+                'accept': 'image/*',
+                'aria-describedby': 'uploadHelp',
+            }),
+            'caption': forms.Textarea(attrs={
+                'rows': 5,
+                'placeholder': 'Write a caption for this moment...',
+                'class': 'form-control caption-input',
+            }),
         }

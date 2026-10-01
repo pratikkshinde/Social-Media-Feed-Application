@@ -25,8 +25,8 @@
                             {% if post.author.profile.profile_pic %}
                                 <img src="{{ post.author.profile.profile_pic.url }}" class="profile-pic-sm me-2">
                             {% else %}
-                                <div class="profile-pic-sm me-2 bg-gradient d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-user text-white small"></i>
+                                <div class="profile-pic-sm me-2 avatar-fallback">
+                                    <i class="fas fa-bolt avatar-mark" aria-hidden="true"></i>
                                 </div>
                             {% endif %}
                             <div class="flex-grow-1">
@@ -57,7 +57,7 @@
                                 <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
                             </div>
                             {% empty %}
-                            <p class="text-muted text-center">No comments yet</p>
+                            <p class="theme-empty-state text-center mb-0">No comments yet</p>
                             {% endfor %}
                         </div>
 

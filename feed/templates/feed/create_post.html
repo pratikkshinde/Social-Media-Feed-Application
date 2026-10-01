@@ -1,65 +1,421 @@
 {% extends 'feed/base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6 col-md-8">
-        <div class="premium-card p-4">
-            <div class="text-center mb-4">
-                <i class="fas fa-plus-circle fa-3x gradient-text"></i>
-                <h2 class="mt-3 fw-bold">Create New Post</h2>
-                <p class="text-muted">Share a moment with your community</p>
-            </div>
+<div class="post-create-page">
+    <header class="post-create-heading">
+        <span class="post-create-eyebrow">NEW MOMENT</span>
+        <h1>Create a post</h1>
+        <p>Pick a photo, add a few words, and share it with your community.</p>
+    </header>
 
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="mb-4">
-                    <div class="file-upload-area p-5 text-center rounded" 
-                         style="background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.3);">
-                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-3"></i>
-                        <h5 class="text-light">Upload Your Photo</h5>
-                        <p class="text-muted small mb-3">Drag & drop or click to browse</p>
-                        {{ form.image }}
+    <form method="POST" enctype="multipart/form-data" id="postCreateForm">
+        {% csrf_token %}
+        <div class="premium-card post-composer">
+            <section class="composer-media" aria-label="Choose a photo">
+                <div class="upload-stage" id="uploadStage">
+                    {{ form.image }}
+                    <img id="imagePreview" class="upload-preview" alt="Selected photo preview" hidden>
+
+                    <div class="upload-empty-state" id="uploadEmptyState">
+                        <span class="upload-icon-wrap"><i class="fas fa-image" aria-hidden="true"></i></span>
+                        <h2>Start with a photo</h2>
+                        <p id="uploadHelp">Choose an image from your device or drop one here.</p>
+                        <label for="{{ form.image.id_for_label }}" class="btn btn-premium choose-photo-button">
+                            <i class="fas fa-arrow-up-from-bracket me-2" aria-hidden="true"></i>Choose photo
+                        </label>
+                        <span class="upload-format-note">JPG, PNG or GIF</span>
+                    </div>
+
+                    <div class="upload-preview-actions" id="uploadPreviewActions" hidden>
+                        <span id="selectedFileName" class="selected-file-name"></span>
+                        <div class="d-flex gap-2">
+                            <label for="{{ form.image.id_for_label }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-repeat me-1" aria-hidden="true"></i>Change
+                            </label>
+                            <button type="button" class="btn btn-dark btn-sm" id="removeImageButton" aria-label="Remove selected photo">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% if form.image.errors %}
+                    <div class="field-errors" role="alert">{{ form.image.errors }}</div>
+                {% endif %}
+            </section>
+
+            <section class="composer-details" aria-label="Post details">
+                <div class="posting-as">
+                    {% if request.user.profile.profile_pic %}
+                        <img src="{{ request.user.profile.profile_pic.url }}" alt="" class="posting-avatar">
+                    {% else %}
+                        <span class="posting-avatar avatar-fallback"><i class="fas fa-bolt" aria-hidden="true"></i></span>
+                    {% endif %}
+                    <div>
+                        <span class="posting-label">Posting as</span>
+                        <strong>{{ request.user.username }}</strong>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Caption</label>
+                <div class="caption-field">
+                    <label for="{{ form.caption.id_for_label }}" class="form-label">Caption</label>
                     {{ form.caption }}
+                    <span class="caption-hint">A little context makes a moment memorable.</span>
+                    {% if form.caption.errors %}
+                        <div class="field-errors" role="alert">{{ form.caption.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-premium py-3">
-                        <i class="fas fa-share me-2"></i>Share Post
+                {% if form.non_field_errors %}
+                    <div class="field-errors" role="alert">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="composer-actions">
+                    <a href="{% url 'feed:profile' %}" class="btn btn-outline-light cancel-post-button">Cancel</a>
+                    <button type="submit" class="btn btn-premium publish-post-button">
+                        <i class="fas fa-paper-plane me-2" aria-hidden="true"></i>Share post
                     </button>
-                    <a href="{% url 'feed:profile' %}" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Profile
-                    </a>
                 </div>
-            </form>
+            </section>
         </div>
-    </div>
+    </form>
 </div>
 
 <style>
-.file-upload-area input[type="file"] {
+.post-create-page {
+    max-width: 1040px;
+    margin: 0 auto;
+}
+
+.post-create-heading {
+    margin: 0 0 24px 4px;
+}
+
+.post-create-eyebrow {
+    color: #20c997;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.post-create-heading h1 {
+    margin: 6px 0 4px;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: 750;
+}
+
+.post-create-heading p {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.post-composer {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+    padding: 0;
+    overflow: hidden;
+}
+
+.composer-media {
+    min-width: 0;
+    padding: 24px;
+    border-right: 1px solid var(--border-color);
+}
+
+.upload-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 0.94;
+    min-height: 360px;
+    overflow: hidden;
+    border: 1px dashed var(--border-color);
+    border-radius: 16px;
+    background-color: var(--surface-soft);
+    background-image: linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+    background-size: 24px 24px;
+    transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.upload-stage:focus-within,
+.upload-stage.is-dragging {
+    border-color: #5278f5;
+    background-color: rgba(82, 120, 245, 0.08);
+}
+
+.upload-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.upload-icon-wrap {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--card-bg);
+    color: #7d91ff;
+    font-size: 1.3rem;
+}
+
+.upload-empty-state h2 {
+    margin: 0 0 6px;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.upload-empty-state p,
+.upload-format-note {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.upload-empty-state p {
+    margin-bottom: 16px;
+}
+
+.choose-photo-button {
+    padding: 10px 18px;
+}
+
+.upload-format-note {
+    margin-top: 12px;
+}
+
+.upload-preview {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.upload-preview-actions {
     position: absolute;
-    top: 0;
-    left: 0;
-    cursor: pointer;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    background: rgba(10, 13, 20, 0.82);
+    color: #fff;
+    backdrop-filter: blur(12px);
 }
 
-.file-upload-area {
-    position: relative;
-    transition: all 0.3s ease;
+.upload-preview-actions[hidden],
+.upload-preview[hidden] {
+    display: none;
 }
 
-.file-upload-area:hover {
-    border-color: #667eea !important;
-    background: rgba(102, 126, 234, 0.05) !important;
+.selected-file-name {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.composer-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 28px;
+}
+
+.posting-as {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.posting-avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    object-fit: cover;
+    color: #fff;
+}
+
+.posting-as div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-primary);
+}
+
+.posting-label {
+    color: var(--text-muted);
+    font-size: 0.74rem;
+}
+
+.caption-field {
+    margin-top: 24px;
+}
+
+.caption-field .form-label {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.caption-input {
+    min-height: 190px;
+    resize: vertical;
+}
+
+.caption-hint {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+}
+
+.field-errors {
+    margin-top: 8px;
+    color: #ff6b6b;
+    font-size: 0.82rem;
+}
+
+.composer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.publish-post-button {
+    min-width: 150px;
+}
+
+@media (max-width: 767.98px) {
+    .post-create-heading {
+        margin-bottom: 18px;
+    }
+
+    .post-create-heading h1 {
+        font-size: 1.5rem;
+    }
+
+    .post-composer {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .composer-media {
+        padding: 14px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .upload-stage {
+        aspect-ratio: 1;
+        min-height: 0;
+    }
+
+    .composer-details {
+        padding: 20px;
+    }
+
+    .caption-field {
+        margin-top: 20px;
+    }
+
+    .caption-input {
+        min-height: 135px;
+    }
+
+    .composer-actions {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        padding-top: 20px;
+    }
+
+    .publish-post-button {
+        min-width: 0;
+    }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stage = document.getElementById('uploadStage');
+    const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+    const preview = document.getElementById('imagePreview');
+    const emptyState = document.getElementById('uploadEmptyState');
+    const previewActions = document.getElementById('uploadPreviewActions');
+    const fileName = document.getElementById('selectedFileName');
+    const removeButton = document.getElementById('removeImageButton');
+    let previewUrl = null;
+
+    function showPreview(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(file);
+        preview.src = previewUrl;
+        preview.hidden = false;
+        emptyState.hidden = true;
+        previewActions.hidden = false;
+        fileName.textContent = file.name;
+        stage.classList.add('has-image');
+    }
+
+    imageInput.addEventListener('change', function() {
+        showPreview(this.files[0]);
+    });
+
+    removeButton.addEventListener('click', function() {
+        imageInput.value = '';
+        preview.removeAttribute('src');
+        preview.hidden = true;
+        previewActions.hidden = true;
+        emptyState.hidden = false;
+        stage.classList.remove('has-image');
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+    });
+
+    ['dragenter', 'dragover'].forEach(function(eventName) {
+        stage.addEventListener(eventName, function(event) {
+            event.preventDefault();
+            stage.classList.add('is-dragging');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(function(eventName) {
+        stage.addEventListener(eventName, function(event) {
+            event.preventDefault();
+            stage.classList.remove('is-dragging');
+        });
+    });
+
+    stage.addEventListener('drop', function(event) {
+        const file = event.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        imageInput.files = transfer.files;
+        showPreview(file);
+    });
+});
+</script>
 {% endblock %}
