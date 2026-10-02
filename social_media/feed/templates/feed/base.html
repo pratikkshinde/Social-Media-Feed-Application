@@ -3,173 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flexr - Premium Social Media</title>
-    
-    <!-- Bootstrap 5 CSS -->
+    <title>Flexr - Social Media</title> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --dark-bg: #1a1d29;
-            --card-bg: #2d303e;
-            --text-light: #f8f9fa;
-            --text-muted: #6c757d;
+            --bg-900: #090d19;
+            --bg-800: #111a2e;
+            --card: rgba(16, 25, 45, 0.78);
+            --card-border: rgba(135, 160, 255, 0.24);
+            --text-main: #eff3ff;
+            --text-muted: #99a5c5;
+            --brand-a: #7f8dff;
+            --brand-b: #38d9f5;
+            --danger: #ff6d8e;
+            --brand-gradient: linear-gradient(135deg, var(--brand-a), var(--brand-b));
         }
-        
+        * { box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--dark-bg);
-            color: var(--text-light);
+            color: var(--text-main);
             min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(126, 140, 255, 0.22), transparent 40%),
+                radial-gradient(circle at 80% 100%, rgba(56, 217, 245, 0.2), transparent 35%),
+                linear-gradient(160deg, var(--bg-900), var(--bg-800) 60%, #0a1020);
         }
-        
+        .main-nav {
+            background: rgba(10, 17, 32, 0.82);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(132, 154, 242, 0.28);
+        }
         .navbar-brand {
             font-weight: 700;
-            background: var(--primary-gradient);
+            letter-spacing: 0.4px;
+            background: var(--brand-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        .gradient-bg {
-            background: var(--primary-gradient);
-        }
-        
+        .nav-link { color: var(--text-main) !important; opacity: 0.85; }
+        .nav-link:hover { opacity: 1; transform: translateY(-1px); }
         .premium-card {
-            background: var(--card-bg);
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: var(--card);
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(10px);
         }
-        
         .btn-premium {
-            background: var(--primary-gradient);
+            background: var(--brand-gradient);
             border: none;
+            color: #0b1020;
+            font-weight: 700;
             border-radius: 12px;
-            padding: 12px 30px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            padding: 10px 20px;
+            transition: transform .2s ease, box-shadow .2s ease;
         }
-        
         .btn-premium:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .form-control {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
-            color: var(--text-light);
-            padding: 12px 15px;
-        }
-        
-        .form-control:focus {
-            background: rgba(255,255,255,0.15);
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            color: var(--text-light);
-        }
-        
-        .profile-pic {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #667eea;
-        }
-        
-        .nav-link {
-            color: var(--text-light) !important;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: #667eea !important;
             transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(86, 128, 255, 0.35);
         }
+        .form-control, .form-select, input[type="text"], input[type="password"], input[type="email"], textarea {
+            background: rgba(9, 14, 30, 0.8) !important;
+            color: var(--text-main) !important;
+            border: 1px solid rgba(142, 162, 241, 0.34) !important;
+            border-radius: 12px !important;
+        }
+        .form-control:focus, .form-select:focus, input:focus, textarea:focus {
+            box-shadow: 0 0 0 0.2rem rgba(127, 141, 255, 0.2) !important;
+            border-color: rgba(130, 149, 255, 0.85) !important;
+        }
+        ::placeholder { color: #7f8ba9 !important; }
+        .text-muted { color: var(--text-muted) !important; }
+        .gradient-text {
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient { background: var(--brand-gradient); }
+        .profile-pic-sm { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+        .page-wrap { padding: 2.5rem 0 3rem; }
+        footer { border-top: 1px solid rgba(115, 135, 220, 0.2); margin-top: 2rem; }
+        .btn-outline-light { border-color: rgba(150, 170, 255, 0.55); color: #d9e3ff; }
+        .btn-outline-light:hover { background: rgba(127, 141, 255, 0.15); color: #ffffff; border-color: rgba(150, 170, 255, 0.75); }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(26, 29, 41, 0.95); backdrop-filter: blur(10px);">
+    <nav class="navbar navbar-expand-lg navbar-dark main-nav sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'feed:feed' %}">
-                <i class="fas fa-bolt me-2"></i>Flexr
+                <i class="fas fa-wave-square me-2"></i>Flexr
             </a>
-            
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-nav ms-auto align-items-lg-center">
                 {% if user.is_authenticated %}
-                    <a class="nav-link mx-2" href="{% url 'feed:feed' %}">
-                        <i class="fas fa-home me-1"></i>Home
-                    </a>
-                    <a class="nav-link mx-2" href="{% url 'feed:search_users' %}">
-                        <i class="fas fa-search me-1"></i>Search
-                    </a>
-                    <a class="nav-link mx-2" href="{% url 'feed:chat_list' %}">
-                        <i class="fas fa-comment me-1"></i>Messages
-                    </a>
-                    <a class="nav-link mx-2" href="{% url 'feed:profile' %}">
-                        <i class="fas fa-user me-1"></i>Profile
-                    </a>
-                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    <a class="nav-link mx-2" href="{% url 'feed:feed' %}"><i class="fas fa-home me-1"></i>Feed</a>
+                    <a class="nav-link mx-2" href="{% url 'feed:search_users' %}"><i class="fas fa-search me-1"></i>Explore</a>
+                    <a class="nav-link mx-2" href="{% url 'feed:chat_list' %}"><i class="fas fa-comment-dots me-1"></i>Chats</a>
+                    <a class="nav-link mx-2" href="{% url 'feed:profile' %}"><i class="fas fa-user me-1"></i>Profile</a>
+                    <form method="post" action="{% url 'logout' %}" class="d-inline ms-lg-2">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-light btn-sm ms-2">
-                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        <button type="submit" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-right-from-bracket me-1"></i>Logout
                         </button>
                     </form>
                 {% else %}
-                    <a class="nav-link mx-2" href="{% url 'login' %}">
-                        <i class="fas fa-sign-in-alt me-1"></i>Login
-                    </a>
-                    <a class="nav-link mx-2" href="{% url 'feed:register' %}">
-                        <i class="fas fa-user-plus me-1"></i>Register
-                    </a>
+                    <a class="nav-link mx-2" href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                    <a class="nav-link mx-2" href="{% url 'feed:register' %}"><i class="fas fa-user-plus me-1"></i>Register</a>
                 {% endif %}
             </div>
         </div>
     </nav>
-
-    <!-- Main Content -->
-    <main class="container my-5">
-        {% block content %}
-        {% endblock %}
+    <main class="container page-wrap">
+        {% block content %}{% endblock %}
     </main>
-
-    <!-- Footer -->
     <footer class="text-center py-4 text-muted">
         <div class="container">
-            <p>&copy; 2024 Flexr. Crafted with <i class="fas fa-heart text-danger"></i> for premium experience.</p>
+            <p class="mb-0">&copy; 2026 Flexr. Share moments, build community.</p>
         </div>
     </footer>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
     <script>
-        // Add smooth animations
-        document.addEventListener('DOMContentLoaded', function() {
-            const elements = document.querySelectorAll('.premium-card');
-            elements.forEach((element, index) => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
-                
-                setTimeout(() => {
-                    element.style.transition = 'all 0.6s ease';
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, index * 200);
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.premium-card').forEach(function (card, index) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                setTimeout(function () {
+                    card.style.transition = 'opacity .25s ease, transform .25s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 70);
             });
         });
     </script>
-   
 </body>
 </html>
